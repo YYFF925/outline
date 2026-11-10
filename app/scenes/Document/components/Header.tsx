@@ -78,18 +78,20 @@ function DocumentHeader({
   const isRevision = !!revision;
   const isEditingFocus = useEditingFocus();
 
-  // Set CSS variable for header offset (used by sticky table headers)
-  useEffect(() => {
-    window.document.documentElement.style.setProperty(
-      "--header-offset",
-      isEditingFocus ? "0px" : `${HEADER_HEIGHT}px`
-    );
-  }, [isEditingFocus]);
-
   const { hasHeadings, editor } = useDocumentContext();
   const sidebarContext = useLocationSidebarContext();
   const [measureRef, size] = useMeasure();
   const isMobile = isMobileMedia || (size.width > 0 && size.width < 700);
+
+  // Set CSS variable for header offset (used by sticky table headers)
+  useEffect(() => {
+    window.document.documentElement.style.setProperty(
+      "--header-offset",
+      isEditingFocus
+        ? "0px"
+        : `${size.height > 0 ? Math.round(size.height) : HEADER_HEIGHT}px`
+    );
+  }, [isEditingFocus, size.height]);
 
   // We cache this value for as long as the component is mounted so that if you
   // apply a template there is still the option to replace it until the user

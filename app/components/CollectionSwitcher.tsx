@@ -129,7 +129,7 @@ const Tabs = styled.div<{ $variant: Variant }>`
   align-items: center;
   gap: 4px;
   min-width: 0;
-  flex: 1;
+  flex: ${(props) => (props.$variant === "page" ? "0 1 auto" : "1")};
   max-height: ${(props) => (props.$variant === "page" ? "none" : "112px")};
   overflow-x: ${(props) => (props.$variant === "page" ? "auto" : "visible")};
   overflow-y: ${(props) => (props.$variant === "page" ? "hidden" : "auto")};
