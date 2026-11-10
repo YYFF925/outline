@@ -50,7 +50,7 @@ const StickyTop = 54;
 
 const Sticky = styled.div`
   position: sticky;
-  top: ${StickyTop}px;
+  top: var(--header-offset, ${StickyTop}px);
   margin: 0 -8px;
   padding: 0 8px;
   background: ${s("background")};

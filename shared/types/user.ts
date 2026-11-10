@@ -34,6 +34,8 @@ export enum UserPreference {
   NotificationBadge = "notificationBadge",
   /** The display order of the reorderable sections in the sidebar. */
   SidebarSectionOrder = "sidebarSectionOrder",
+  /** Whether collections appear in the page header and the sidebar shows one collection. */
+  CollectionFocusedNav = "collectionFocusedNav",
 }
 
 /** Styles of prefix that can be shown before headings. */
@@ -82,4 +84,5 @@ export type UserPreferences = {
   [UserPreference.ShowDocumentStats]?: boolean;
   [UserPreference.NotificationBadge]?: NotificationBadgeType;
   [UserPreference.SidebarSectionOrder]?: SidebarSection[];
+  [UserPreference.CollectionFocusedNav]?: boolean;
 };

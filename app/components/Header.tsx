@@ -14,18 +14,22 @@ import { HEADER_HEIGHT, MOBILE_TOUCH_TARGET } from "@shared/constants";
 import { depths, hover, s } from "@shared/styles";
 import { metaDisplay } from "@shared/utils/keyboard";
 import Button from "~/components/Button";
+import CollectionSwitcher from "~/components/CollectionSwitcher";
 import Fade from "~/components/Fade";
 import Flex from "~/components/Flex";
 import { useSidebarCollapsed } from "~/components/SidebarCollapsedContext";
 import { useSplitView } from "~/components/SplitView/context";
 import Tooltip from "~/components/Tooltip";
+import { useCollectionFocusedNav } from "~/hooks/useCollectionFocusedNav";
 import useEventListener from "~/hooks/useEventListener";
+import { useLocationSelector } from "~/hooks/useLocationSelector";
 import useMobile from "~/hooks/useMobile";
 import useStores from "~/hooks/useStores";
 import useWindowScrollbarWidth from "~/hooks/useWindowScrollbarWidth";
 import { draggableOnDesktop, fadeOnDesktopBackgrounded } from "~/styles";
 import Desktop from "~/utils/Desktop";
 import history from "~/utils/history";
+import { settingsPath } from "~/utils/routeHelpers";
 import { closeSplitPane } from "~/utils/splitView";
 import { TooltipProvider } from "./TooltipContext";
 
@@ -47,6 +51,10 @@ function Header({ left, title, actions, hasSidebar, className, ref }: Props) {
   const { t } = useTranslation();
   const { pane, isSplitView } = useSplitView();
   const isMobile = useMobile();
+  const collectionFocused = useCollectionFocusedNav();
+  const isSettings = useLocationSelector((location) =>
+    location.pathname.startsWith(settingsPath())
+  );
   const sidebarCollapsed = useSidebarCollapsed();
   const hasMobileSidebar = hasSidebar && isMobile;
   const hasDesktopSidebar = hasSidebar && !isMobile;
@@ -92,74 +100,119 @@ function Header({ left, title, actions, hasSidebar, className, ref }: Props) {
 
   const breadcrumbMakesCompact = breadcrumbsSize.width > size.width / 3;
   const isCompact = size.width < 1000 || breadcrumbMakesCompact;
+  const showCollectionSwitcher =
+    collectionFocused && hasSidebar && !isSettings && !isMobile;
+  const insetTitleAdjust = ui.sidebarIsClosed && Desktop.hasInsetTitlebar();
+  const scrollbarInset = isAtWindowEnd ? scrollbarWidth : undefined;
+
+  // Keep sticky tabs and editor chrome below the stacked collection header.
+  React.useEffect(() => {
+    if (size.height > 0) {
+      document.documentElement.style.setProperty(
+        "--header-offset",
+        `${Math.round(size.height)}px`
+      );
+    }
+
+    return () => {
+      document.documentElement.style.removeProperty("--header-offset");
+    };
+  }, [size.height]);
+
+  const sidebarToggle = hasDesktopSidebar ? (
+    <SidebarToggle $visible={sidebarCollapsed} aria-hidden={!sidebarCollapsed}>
+      <Tooltip
+        content={t("Toggle sidebar")}
+        shortcut={`${metaDisplay}+.`}
+        side="bottom"
+      >
+        <SidebarToggleButton
+          $visible={sidebarCollapsed}
+          aria-label={t("Expand sidebar")}
+          onClick={ui.toggleCollapsedSidebar}
+          icon={<SidebarIcon />}
+          tabIndex={sidebarCollapsed ? undefined : -1}
+          neutral
+          borderOnHover
+        />
+      </Tooltip>
+    </SidebarToggle>
+  ) : null;
+
+  const toolbar = (
+    <>
+      {!showCollectionSwitcher && sidebarToggle}
+      {left || hasMobileSidebar ? (
+        <Breadcrumbs ref={setBreadcrumbRef}>
+          {hasMobileSidebar && (
+            <MobileMenuButton
+              onClick={ui.toggleMobileSidebar}
+              icon={<MenuIcon />}
+              neutral
+            />
+          )}
+          {left}
+        </Breadcrumbs>
+      ) : null}
+
+      {isScrolled && !isCompact ? (
+        <Title onClick={handleClickTitle}>
+          <Fade>{title}</Fade>
+        </Title>
+      ) : (
+        <div />
+      )}
+      <Actions align="center" justify="flex-end">
+        {typeof actions === "function" ? actions({ isCompact }) : actions}
+        {isSplitView && (
+          <Tooltip content={t("Close pane")} side="bottom">
+            <CloseSplitPaneButton
+              aria-label={t("Close pane")}
+              onClick={handleCloseSplitPane}
+              icon={<CloseIcon />}
+              neutral
+              borderOnHover
+            />
+          </Tooltip>
+        )}
+      </Actions>
+    </>
+  );
 
   return (
     <TooltipProvider>
       <Wrapper
         ref={mergeRefs([ref, internalMeasureRef])}
-        align="center"
+        column={showCollectionSwitcher}
+        align={showCollectionSwitcher ? "stretch" : "center"}
         shrink={false}
         className={className}
         $passThrough={passThrough}
-        $insetTitleAdjust={ui.sidebarIsClosed && Desktop.hasInsetTitlebar()}
-        $scrollbarInset={isAtWindowEnd ? scrollbarWidth : undefined}
+        $stacked={showCollectionSwitcher}
+        $insetTitleAdjust={insetTitleAdjust}
+        $scrollbarInset={scrollbarInset}
       >
-        {hasDesktopSidebar && (
-          <SidebarToggle
-            $visible={sidebarCollapsed}
-            aria-hidden={!sidebarCollapsed}
-          >
-            <Tooltip
-              content={t("Toggle sidebar")}
-              shortcut={`${metaDisplay}+.`}
-              side="bottom"
+        {showCollectionSwitcher ? (
+          <>
+            <CollectionRow
+              align="center"
+              $insetTitleAdjust={insetTitleAdjust}
+              $scrollbarInset={scrollbarInset}
             >
-              <SidebarToggleButton
-                $visible={sidebarCollapsed}
-                aria-label={t("Expand sidebar")}
-                onClick={ui.toggleCollapsedSidebar}
-                icon={<SidebarIcon />}
-                tabIndex={sidebarCollapsed ? undefined : -1}
-                neutral
-                borderOnHover
-              />
-            </Tooltip>
-          </SidebarToggle>
-        )}
-        {left || hasMobileSidebar ? (
-          <Breadcrumbs ref={setBreadcrumbRef}>
-            {hasMobileSidebar && (
-              <MobileMenuButton
-                onClick={ui.toggleMobileSidebar}
-                icon={<MenuIcon />}
-                neutral
-              />
-            )}
-            {left}
-          </Breadcrumbs>
-        ) : null}
-
-        {isScrolled && !isCompact ? (
-          <Title onClick={handleClickTitle}>
-            <Fade>{title}</Fade>
-          </Title>
+              {sidebarToggle}
+              <CollectionSwitcher />
+            </CollectionRow>
+            <Toolbar
+              align="center"
+              $insetTitleAdjust={insetTitleAdjust}
+              $scrollbarInset={scrollbarInset}
+            >
+              {toolbar}
+            </Toolbar>
+          </>
         ) : (
-          <div />
+          toolbar
         )}
-        <Actions align="center" justify="flex-end">
-          {typeof actions === "function" ? actions({ isCompact }) : actions}
-          {isSplitView && (
-            <Tooltip content={t("Close pane")} side="bottom">
-              <CloseSplitPaneButton
-                aria-label={t("Close pane")}
-                onClick={handleCloseSplitPane}
-                icon={<CloseIcon />}
-                neutral
-                borderOnHover
-              />
-            </Tooltip>
-          )}
-        </Actions>
       </Wrapper>
     </TooltipProvider>
   );
@@ -270,6 +323,7 @@ const Actions = styled(Flex)`
 
 type WrapperProps = {
   $passThrough?: boolean;
+  $stacked?: boolean;
   $insetTitleAdjust?: boolean;
   /** Width of the window scrollbar that the end of the header falls behind. */
   $scrollbarInset?: number;
@@ -302,10 +356,11 @@ const Wrapper = styled(Flex)<WrapperProps>`
       backdrop-filter: blur(20px);
       `};
 
-  padding: 6px 16px;
-  padding-inline-end: ${endPadding(16)};
+  padding: ${(props) => (props.$stacked ? 0 : "6px 16px")};
+  padding-inline-end: ${(props) =>
+    props.$stacked ? 0 : endPadding(16)(props)};
   transform: translate3d(0, 0, 0);
-  min-height: ${HEADER_HEIGHT}px;
+  min-height: ${(props) => (props.$stacked ? "auto" : `${HEADER_HEIGHT}px`)};
   justify-content: flex-start;
   ${draggableOnDesktop()}
 
@@ -367,10 +422,39 @@ const Wrapper = styled(Flex)<WrapperProps>`
   `};
 
   ${breakpoint("tablet")`
+    ${(props: WrapperProps) =>
+      props.$stacked
+        ? "padding: 0;"
+        : `
+      padding: 12px;
+      padding-inline-end: ${endPadding(12)(props)};
+      ${props.$insetTitleAdjust ? "padding-left: 64px;" : ""}
+    `}
+    `};
+`;
+
+const headerRowPadding = css<WrapperProps>`
+  box-sizing: border-box;
+  min-height: ${HEADER_HEIGHT}px;
+  width: 100%;
+  padding: 6px 16px;
+  padding-inline-end: ${endPadding(16)};
+
+  ${breakpoint("tablet")`
     padding: 12px;
     padding-inline-end: ${endPadding(12)};
     ${(props: WrapperProps) => props.$insetTitleAdjust && `padding-left: 64px;`}
-    `};
+  `};
+`;
+
+const CollectionRow = styled(Flex)<WrapperProps>`
+  ${headerRowPadding}
+  flex-shrink: 0;
+`;
+
+const Toolbar = styled(Flex)<WrapperProps>`
+  ${headerRowPadding}
+  flex-shrink: 0;
 `;
 
 const Title = styled("div")`
