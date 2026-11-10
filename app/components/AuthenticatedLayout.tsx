@@ -5,8 +5,11 @@ import ErrorSuspended from "~/scenes/Errors/ErrorSuspended";
 import Layout from "~/components/Layout";
 import RegisterKeyDown from "~/components/RegisterKeyDown";
 import { RightSidebarProvider } from "~/components/RightSidebarContext";
+import CollectionBar from "~/components/CollectionBar";
 import Sidebar from "~/components/Sidebar";
+import CollectionFocusedSidebar from "~/components/Sidebar/CollectionFocused";
 import { rootWebMCPActions } from "~/actions/definitions/webmcp";
+import { useCollectionFocusedNav } from "~/hooks/useCollectionFocusedNav";
 import useCurrentTeam from "~/hooks/useCurrentTeam";
 import useKeyDown from "~/hooks/useKeyDown";
 import useWebMCPActions from "~/hooks/useWebMCPActions";
@@ -39,13 +42,16 @@ type Props = {
 
 const AuthenticatedLayout: React.FC<Props> = ({ children }: Props) => {
   const { ui, auth } = useStores();
+  const collectionFocused = useCollectionFocusedNav();
   const isSettings = useLocationSelector((location) =>
     location.pathname.startsWith(settingsPath())
   );
   // State rather than a ref, so that portals receive the element once mounted.
   const [layoutElement, setLayoutElement] =
     React.useState<HTMLDivElement | null>(null);
-  const canCollection = usePolicy(ui.activeCollectionId);
+  const canCollection = usePolicy(
+    ui.activeCollectionId ?? ui.focusedCollectionId
+  );
   const team = useCurrentTeam();
   const [spendPostLoginPath] = usePostLoginPath();
 
@@ -64,11 +70,11 @@ const AuthenticatedLayout: React.FC<Props> = ({ children }: Props) => {
     if (event.metaKey || event.altKey) {
       return;
     }
-    const { activeCollectionId } = ui;
-    if (!activeCollectionId || !canCollection.createDocument) {
+    const collectionId = ui.activeCollectionId ?? ui.focusedCollectionId;
+    if (!collectionId || !canCollection.createDocument) {
       return;
     }
-    history.push(newDocumentPath(activeCollectionId));
+    history.push(newDocumentPath(collectionId));
   };
 
   React.useEffect(() => {
@@ -96,7 +102,7 @@ const AuthenticatedLayout: React.FC<Props> = ({ children }: Props) => {
         {isSettings && <SettingsSidebar />}
       </React.Suspense>
       <div style={isSettings ? { display: "none" } : undefined}>
-        <Sidebar />
+        {collectionFocused ? <CollectionFocusedSidebar /> : <Sidebar />}
       </div>
     </Fade>
   );
@@ -106,6 +112,7 @@ const AuthenticatedLayout: React.FC<Props> = ({ children }: Props) => {
       <RightSidebarProvider>
         <PortalContext.Provider value={layoutElement}>
           <DragAndDropProvider>
+            {!isSettings && collectionFocused && <CollectionBar />}
             <Layout
               title={team.name}
               sidebar={sidebar}

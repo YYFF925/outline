@@ -43,6 +43,7 @@ type PersistedData = Pick<
   | "sidebarRightWidth"
   | "sidebarCollapsed"
   | "tocVisible"
+  | "focusedCollectionId"
 >;
 
 class UiStore {
@@ -85,6 +86,10 @@ class UiStore {
 
   @observable
   sidebarCollapsed = false;
+
+  /** Last collection shown in collection-focused navigation. */
+  @observable
+  focusedCollectionId: string | undefined = undefined;
 
   // Whether the sidebar is hidden entirely, e.g. when embedding a document via
   // the ?sidebarHidden=1 query parameter. Not persisted across reloads.
@@ -169,6 +174,7 @@ class UiStore {
     );
     this.tocVisible = data.tocVisible;
     this.rightSidebar = data.rightSidebar ?? null;
+    this.focusedCollectionId = data.focusedCollectionId;
     this.theme = data.theme || Theme.System;
     Storage.set(THEME_STORAGE_KEY, this.theme);
 
@@ -399,6 +405,22 @@ class UiStore {
     }
   };
 
+  /**
+   * Remember which collection the focused sidebar should display when the
+   * current page has no collection of its own.
+   *
+   * @param collectionId the collection to remember, or undefined to clear.
+   */
+  @action
+  setFocusedCollectionId = (collectionId: string | undefined): void => {
+    if (this.focusedCollectionId === collectionId) {
+      return;
+    }
+
+    this.focusedCollectionId = collectionId;
+    this.persist();
+  };
+
   @action
   setActiveCollection = (collectionId: string | undefined): void => {
     if (collectionId === undefined || collectionId === null) {
@@ -559,6 +581,7 @@ class UiStore {
       languagePromptDismissed: this.languagePromptDismissed,
       rightSidebar: this.rightSidebar,
       theme: this.theme,
+      focusedCollectionId: this.focusedCollectionId,
     };
   }
 

@@ -1,3 +1,4 @@
+import { UserPreference } from "@shared/types";
 import User from "./User";
 import stores from "~/stores";
 
@@ -192,6 +193,39 @@ describe("User model", () => {
         users
       );
       expect(user.initials).toBe("JG");
+    });
+  });
+
+  describe("getPreference", () => {
+    it("defaults collection-focused navigation to on", () => {
+      const user = new User(
+        {
+          id: "301",
+          name: "Test User",
+        },
+        users
+      );
+
+      expect(user.getPreference(UserPreference.CollectionFocusedNav)).toBe(
+        true
+      );
+    });
+
+    it("returns a stored collection-focused navigation preference", () => {
+      const user = new User(
+        {
+          id: "302",
+          name: "Test User",
+          preferences: {
+            [UserPreference.CollectionFocusedNav]: false,
+          },
+        },
+        users
+      );
+
+      expect(user.getPreference(UserPreference.CollectionFocusedNav)).toBe(
+        false
+      );
     });
   });
 });

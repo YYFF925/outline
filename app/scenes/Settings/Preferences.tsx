@@ -109,6 +109,15 @@ function Preferences() {
     [user, t]
   );
 
+  const handleCollectionFocusedNavChange = React.useCallback(
+    async (checked: boolean) => {
+      user.setPreference(UserPreference.CollectionFocusedNav, checked);
+      await user.save();
+      toast.success(t("Preferences saved"));
+    },
+    [user, t]
+  );
+
   const handleEnableSmartTextChange = React.useCallback(
     async (checked: boolean) => {
       user.setPreference(UserPreference.EnableSmartText, checked);
@@ -311,6 +320,20 @@ function Preferences() {
           name={UserPreference.RememberLastPath}
           checked={!!user.getPreference(UserPreference.RememberLastPath)}
           onChange={handleRememberLastPathChange}
+        />
+      </SettingRow>
+      <SettingRow
+        name={UserPreference.CollectionFocusedNav}
+        label={t("Collection-focused navigation")}
+        description={t(
+          "Show collections in a row at the top and only the current collection’s documents in the sidebar."
+        )}
+      >
+        <Switch
+          id={UserPreference.CollectionFocusedNav}
+          name={UserPreference.CollectionFocusedNav}
+          checked={!!user.getPreference(UserPreference.CollectionFocusedNav)}
+          onChange={handleCollectionFocusedNavChange}
         />
       </SettingRow>
       <SettingRow
