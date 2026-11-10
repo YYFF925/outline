@@ -4,12 +4,12 @@ import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import styled from "styled-components";
-import { s } from "@shared/styles";
 import { light as defaultTheme } from "@shared/styles/theme";
 import { metaDisplay } from "@shared/utils/keyboard";
 import { createCollection } from "~/actions/definitions/collections";
 import { navigateToImport } from "~/actions/definitions/navigation";
 import { inviteUser } from "~/actions/definitions/users";
+import CollectionSwitcher from "~/components/CollectionSwitcher";
 import Flex from "~/components/Flex";
 import CollectionIcon from "~/components/Icons/CollectionIcon";
 import NudeButton from "~/components/NudeButton";
@@ -35,7 +35,6 @@ import {
 } from "./components/DragActiveContext";
 import ArchiveLink from "./components/ArchiveLink";
 import CollectionLinkChildren from "./components/CollectionLinkChildren";
-import CollectionSwitcher from "./components/CollectionSwitcher";
 import { DismissableSidebarAction } from "./components/DismissableSidebarAction";
 import { DraftsLink } from "./components/DraftsLink";
 import DragPlaceholder from "./components/DragPlaceholder";
@@ -56,8 +55,8 @@ import TrashLink from "./components/TrashLink";
 import Sidebar from "./Sidebar";
 
 /**
- * Left sidebar for collection-focused navigation: collection chips under the
- * workspace name, then Home/Search and the current collection's document tree.
+ * Left sidebar for collection-focused navigation: Home/Search plus the
+ * document tree of the currently focused collection.
  *
  * @returns the collection-focused sidebar.
  */
@@ -130,9 +129,11 @@ function CollectionFocusedSidebar() {
             )}
           </SidebarButton>
         </TeamMenu>
-        <Switcher>
-          <CollectionSwitcher />
-        </Switcher>
+        {isMobile && (
+          <MobileSwitcher>
+            <CollectionSwitcher variant="sidebar" />
+          </MobileSwitcher>
+        )}
         <Overflow>
           <Section>
             <SidebarLink
@@ -276,10 +277,9 @@ const Overflow = styled.div`
   flex-shrink: 0;
 `;
 
-const Switcher = styled.div`
+const MobileSwitcher = styled.div`
   flex-shrink: 0;
   padding: 0 12px 10px;
-  border-bottom: 1px solid ${s("divider")};
 `;
 
 const HeaderActions = styled(Flex)`

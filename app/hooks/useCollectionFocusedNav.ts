@@ -11,8 +11,8 @@ import useStores from "./useStores";
  * Defaults to on so this fork uses the PandaWiki-style layout unless the user
  * turns it off in Preferences.
  *
- * @returns true when collections should appear under the workspace name and
- * the sidebar should show only the current collection's documents.
+ * @returns true when collections should appear in the page header and the
+ * sidebar should show only the current collection's documents.
  */
 export function useCollectionFocusedNav(): boolean {
   const user = useCurrentUser({ rejectOnEmpty: false });

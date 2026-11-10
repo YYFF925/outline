@@ -14,18 +14,22 @@ import { HEADER_HEIGHT, MOBILE_TOUCH_TARGET } from "@shared/constants";
 import { depths, hover, s } from "@shared/styles";
 import { metaDisplay } from "@shared/utils/keyboard";
 import Button from "~/components/Button";
+import CollectionSwitcher from "~/components/CollectionSwitcher";
 import Fade from "~/components/Fade";
 import Flex from "~/components/Flex";
 import { useSidebarCollapsed } from "~/components/SidebarCollapsedContext";
 import { useSplitView } from "~/components/SplitView/context";
 import Tooltip from "~/components/Tooltip";
+import { useCollectionFocusedNav } from "~/hooks/useCollectionFocusedNav";
 import useEventListener from "~/hooks/useEventListener";
+import { useLocationSelector } from "~/hooks/useLocationSelector";
 import useMobile from "~/hooks/useMobile";
 import useStores from "~/hooks/useStores";
 import useWindowScrollbarWidth from "~/hooks/useWindowScrollbarWidth";
 import { draggableOnDesktop, fadeOnDesktopBackgrounded } from "~/styles";
 import Desktop from "~/utils/Desktop";
 import history from "~/utils/history";
+import { settingsPath } from "~/utils/routeHelpers";
 import { closeSplitPane } from "~/utils/splitView";
 import { TooltipProvider } from "./TooltipContext";
 
@@ -47,6 +51,10 @@ function Header({ left, title, actions, hasSidebar, className, ref }: Props) {
   const { t } = useTranslation();
   const { pane, isSplitView } = useSplitView();
   const isMobile = useMobile();
+  const collectionFocused = useCollectionFocusedNav();
+  const isSettings = useLocationSelector((location) =>
+    location.pathname.startsWith(settingsPath())
+  );
   const sidebarCollapsed = useSidebarCollapsed();
   const hasMobileSidebar = hasSidebar && isMobile;
   const hasDesktopSidebar = hasSidebar && !isMobile;
@@ -92,6 +100,8 @@ function Header({ left, title, actions, hasSidebar, className, ref }: Props) {
 
   const breadcrumbMakesCompact = breadcrumbsSize.width > size.width / 3;
   const isCompact = size.width < 1000 || breadcrumbMakesCompact;
+  const showCollectionSwitcher =
+    collectionFocused && hasSidebar && !isSettings && !isMobile;
 
   return (
     <TooltipProvider>
@@ -125,6 +135,11 @@ function Header({ left, title, actions, hasSidebar, className, ref }: Props) {
               />
             </Tooltip>
           </SidebarToggle>
+        )}
+        {showCollectionSwitcher && (
+          <CollectionSlot>
+            <CollectionSwitcher />
+          </CollectionSlot>
         )}
         {left || hasMobileSidebar ? (
           <Breadcrumbs ref={setBreadcrumbRef}>
@@ -186,6 +201,14 @@ const mobilePill = css`
     0 0 0 1px ${s("divider")},
     0 4px 12px rgb(0 0 0 / 8%);
   border-radius: ${MOBILE_TOUCH_TARGET / 2}px;
+`;
+
+const CollectionSlot = styled.div`
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding-inline-end: 8px;
 `;
 
 const Breadcrumbs = styled("div")`

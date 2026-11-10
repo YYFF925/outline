@@ -34,7 +34,7 @@ export enum UserPreference {
   NotificationBadge = "notificationBadge",
   /** The display order of the reorderable sections in the sidebar. */
   SidebarSectionOrder = "sidebarSectionOrder",
-  /** Whether collections appear under the workspace name and the sidebar shows one collection. */
+  /** Whether collections appear in the page header and the sidebar shows one collection. */
   CollectionFocusedNav = "collectionFocusedNav",
 }
 
