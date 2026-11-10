@@ -4,13 +4,12 @@ import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import styled from "styled-components";
+import { s } from "@shared/styles";
 import { light as defaultTheme } from "@shared/styles/theme";
-import { breakpoint } from "@shared/styles/breakpoint";
 import { metaDisplay } from "@shared/utils/keyboard";
 import { createCollection } from "~/actions/definitions/collections";
 import { navigateToImport } from "~/actions/definitions/navigation";
 import { inviteUser } from "~/actions/definitions/users";
-import CollectionBarSwitcher from "~/components/CollectionBar/CollectionSwitcher";
 import Flex from "~/components/Flex";
 import CollectionIcon from "~/components/Icons/CollectionIcon";
 import NudeButton from "~/components/NudeButton";
@@ -36,6 +35,7 @@ import {
 } from "./components/DragActiveContext";
 import ArchiveLink from "./components/ArchiveLink";
 import CollectionLinkChildren from "./components/CollectionLinkChildren";
+import CollectionSwitcher from "./components/CollectionSwitcher";
 import { DismissableSidebarAction } from "./components/DismissableSidebarAction";
 import { DraftsLink } from "./components/DraftsLink";
 import DragPlaceholder from "./components/DragPlaceholder";
@@ -56,8 +56,8 @@ import TrashLink from "./components/TrashLink";
 import Sidebar from "./Sidebar";
 
 /**
- * Left sidebar for collection-focused navigation: Home/Search plus the
- * document tree of the currently focused collection.
+ * Left sidebar for collection-focused navigation: collection chips under the
+ * workspace name, then Home/Search and the current collection's document tree.
  *
  * @returns the collection-focused sidebar.
  */
@@ -98,114 +98,110 @@ function CollectionFocusedSidebar() {
   const sidebarContext = collection?.isPersonal ? "personal" : "collections";
 
   return (
-    <SidebarOffset>
-      <Sidebar hidden={!ui.readyToShow}>
-        <DragActiveProvider>
-          <DragPlaceholder />
+    <Sidebar hidden={!ui.readyToShow}>
+      <DragActiveProvider>
+        <DragPlaceholder />
 
-          <TeamMenu>
-            <SidebarButton
-              title={team.name}
-              image={<TeamLogo model={team} size={24} alt={t("Logo")} />}
-            >
-              {isMobile ? null : (
-                <Tooltip
-                  content={t("Toggle sidebar")}
-                  shortcut={`${metaDisplay}+.`}
-                >
-                  <ToggleButton
-                    position="bottom"
-                    image={<SidebarIcon />}
-                    aria-label={
-                      ui.sidebarCollapsed
-                        ? t("Expand sidebar")
-                        : t("Collapse sidebar")
-                    }
-                    style={{ paddingInline: 4 }}
-                    onClick={() => {
-                      ui.toggleCollapsedSidebar();
-                      (document.activeElement as HTMLElement)?.blur();
-                    }}
-                  />
-                </Tooltip>
-              )}
-            </SidebarButton>
-          </TeamMenu>
-          {isMobile && (
-            <MobileSwitcher>
-              <CollectionBarSwitcher />
-            </MobileSwitcher>
-          )}
-          <Overflow>
-            <Section>
-              <SidebarLink
-                to={homePath()}
-                icon={<HomeIcon />}
-                exact={false}
-                label={t("Home")}
-                onClickIntent={Scenes.Home.preload}
-              />
-              <SidebarLink
-                to={searchPath()}
-                icon={<SearchIcon />}
-                label={t("Search")}
-                exact={false}
-                onClick={handleSearchClick}
-                onClickIntent={Scenes.Search.preload}
-              />
-              {can.createDocument && <DraftsLink />}
-            </Section>
-          </Overflow>
-          <Scrollable flex shadow ref={setScrollArea}>
-            <SidebarScrollProvider value={scrollArea}>
-              <SidebarNavigationProvider>
-                <SidebarContext.Provider value={sidebarContext}>
-                  {collection ? (
-                    <CollectionTree collection={collection} />
-                  ) : collections.isLoaded ? (
-                    <Section>
-                      {can.createCollection ? (
-                        <SidebarAction action={createCollection} depth={0} />
-                      ) : (
-                        <SidebarLink
-                          label={
-                            <Text type="tertiary" size="small" italic>
-                              {t("No collections")}
-                            </Text>
-                          }
-                          onClick={() => {}}
-                        />
-                      )}
-                    </Section>
-                  ) : (
-                    <PlaceholderCollections />
-                  )}
-                </SidebarContext.Provider>
-                <Starred />
-                <SharedWithMe />
-                {can.createDocument && (
-                  <Section auto>
-                    <ArchiveLink />
+        <TeamMenu>
+          <SidebarButton
+            title={team.name}
+            image={<TeamLogo model={team} size={24} alt={t("Logo")} />}
+          >
+            {isMobile ? null : (
+              <Tooltip
+                content={t("Toggle sidebar")}
+                shortcut={`${metaDisplay}+.`}
+              >
+                <ToggleButton
+                  position="bottom"
+                  image={<SidebarIcon />}
+                  aria-label={
+                    ui.sidebarCollapsed
+                      ? t("Expand sidebar")
+                      : t("Collapse sidebar")
+                  }
+                  style={{ paddingInline: 4 }}
+                  onClick={() => {
+                    ui.toggleCollapsedSidebar();
+                    (document.activeElement as HTMLElement)?.blur();
+                  }}
+                />
+              </Tooltip>
+            )}
+          </SidebarButton>
+        </TeamMenu>
+        <Switcher>
+          <CollectionSwitcher />
+        </Switcher>
+        <Overflow>
+          <Section>
+            <SidebarLink
+              to={homePath()}
+              icon={<HomeIcon />}
+              exact={false}
+              label={t("Home")}
+              onClickIntent={Scenes.Home.preload}
+            />
+            <SidebarLink
+              to={searchPath()}
+              icon={<SearchIcon />}
+              label={t("Search")}
+              exact={false}
+              onClick={handleSearchClick}
+              onClickIntent={Scenes.Search.preload}
+            />
+            {can.createDocument && <DraftsLink />}
+          </Section>
+        </Overflow>
+        <Scrollable flex shadow ref={setScrollArea}>
+          <SidebarScrollProvider value={scrollArea}>
+            <SidebarNavigationProvider>
+              <SidebarContext.Provider value={sidebarContext}>
+                {collection ? (
+                  <CollectionTree collection={collection} />
+                ) : collections.isLoaded ? (
+                  <Section>
+                    {can.createCollection ? (
+                      <SidebarAction action={createCollection} depth={0} />
+                    ) : (
+                      <SidebarLink
+                        label={
+                          <Text type="tertiary" size="small" italic>
+                            {t("No collections")}
+                          </Text>
+                        }
+                        onClick={() => {}}
+                      />
+                    )}
                   </Section>
+                ) : (
+                  <PlaceholderCollections />
                 )}
-              </SidebarNavigationProvider>
-              <Section>
-                {can.createDocument && <TrashLink />}
-                <DismissableSidebarAction
-                  id="sidebar-import-hidden"
-                  action={navigateToImport}
-                />
-                <DismissableSidebarAction
-                  id="sidebar-invite-hidden"
-                  action={inviteUser}
-                />
-              </Section>
-            </SidebarScrollProvider>
-          </Scrollable>
-        </DragActiveProvider>
-        <HistoryNavigation />
-      </Sidebar>
-    </SidebarOffset>
+              </SidebarContext.Provider>
+              <Starred />
+              <SharedWithMe />
+              {can.createDocument && (
+                <Section auto>
+                  <ArchiveLink />
+                </Section>
+              )}
+            </SidebarNavigationProvider>
+            <Section>
+              {can.createDocument && <TrashLink />}
+              <DismissableSidebarAction
+                id="sidebar-import-hidden"
+                action={navigateToImport}
+              />
+              <DismissableSidebarAction
+                id="sidebar-invite-hidden"
+                action={inviteUser}
+              />
+            </Section>
+          </SidebarScrollProvider>
+        </Scrollable>
+      </DragActiveProvider>
+      <HistoryNavigation />
+    </Sidebar>
   );
 }
 
@@ -275,22 +271,15 @@ const CollectionTree = observer(function CollectionTree({
   );
 });
 
-const SidebarOffset = styled.div`
-  ${breakpoint("tablet")`
-    #sidebar {
-      top: var(--collection-bar-height, 0px);
-    }
-  `}
-`;
-
 const Overflow = styled.div`
   overflow: hidden;
   flex-shrink: 0;
 `;
 
-const MobileSwitcher = styled.div`
+const Switcher = styled.div`
   flex-shrink: 0;
-  padding: 0 8px 8px;
+  padding: 0 12px 10px;
+  border-bottom: 1px solid ${s("divider")};
 `;
 
 const HeaderActions = styled(Flex)`

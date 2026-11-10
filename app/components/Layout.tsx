@@ -94,13 +94,11 @@ type ContentProps = {
 
 const Content = styled(Flex)<ContentProps>`
   margin: 0;
-  padding-top: var(--collection-bar-height, 0px);
   transition: ${(props) =>
     props.$isResizing ? "none" : `margin-inline-start 100ms ease-out`};
 
   @media print {
     margin: 0 !important;
-    padding-top: 0 !important;
   }
 
   ${breakpoint("mobile", "tablet")`

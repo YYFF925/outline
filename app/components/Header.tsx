@@ -286,7 +286,7 @@ const endPadding = (base: number) => (props: WrapperProps) =>
     : `calc(${base}px + ${props.$scrollbarInset}px + var(--removed-body-scroll-bar-size, 0px))`;
 
 const Wrapper = styled(Flex)<WrapperProps>`
-  top: var(--collection-bar-height, 0px);
+  top: 0;
   z-index: ${depths.header};
   position: sticky;
   background: ${s("background")};

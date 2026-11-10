@@ -1,9 +1,4 @@
 /**
- * Height of the top collection switcher bar, in pixels.
- */
-export const COLLECTION_BAR_HEIGHT = 48;
-
-/**
  * Sidebar width applied in collection-focused navigation when the user has not
  * resized away from the default.
  */
@@ -31,7 +26,7 @@ type ResolveFocusedCollectionOptions<T extends FocusedCollectionLike> = {
 };
 
 /**
- * Resolves which collection the focused sidebar and collection bar should show.
+ * Resolves which collection the focused sidebar should display.
  *
  * Prefers the collection of the current page, then the last focused collection,
  * then the first available fallback.

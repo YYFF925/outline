@@ -326,7 +326,7 @@ function Preferences() {
         name={UserPreference.CollectionFocusedNav}
         label={t("Collection-focused navigation")}
         description={t(
-          "Show collections in a row at the top and only the current collection’s documents in the sidebar."
+          "Show collections under the workspace name and only the current collection’s documents in the sidebar."
         )}
       >
         <Switch

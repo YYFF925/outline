@@ -5,7 +5,6 @@ import ErrorSuspended from "~/scenes/Errors/ErrorSuspended";
 import Layout from "~/components/Layout";
 import RegisterKeyDown from "~/components/RegisterKeyDown";
 import { RightSidebarProvider } from "~/components/RightSidebarContext";
-import CollectionBar from "~/components/CollectionBar";
 import Sidebar from "~/components/Sidebar";
 import CollectionFocusedSidebar from "~/components/Sidebar/CollectionFocused";
 import { rootWebMCPActions } from "~/actions/definitions/webmcp";
@@ -112,7 +111,6 @@ const AuthenticatedLayout: React.FC<Props> = ({ children }: Props) => {
       <RightSidebarProvider>
         <PortalContext.Provider value={layoutElement}>
           <DragAndDropProvider>
-            {!isSettings && collectionFocused && <CollectionBar />}
             <Layout
               title={team.name}
               sidebar={sidebar}

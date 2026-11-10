@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { ellipsis, hideScrollbars, hover, s } from "@shared/styles";
 import { CollectionNew } from "~/components/Collection/CollectionNew";
-import Flex from "~/components/Flex";
 import CollectionIcon from "~/components/Icons/CollectionIcon";
 import NudeButton from "~/components/NudeButton";
 import { TooltipProvider } from "~/components/TooltipContext";
@@ -24,7 +23,7 @@ type Props = {
 };
 
 /**
- * Horizontal list of collections used by the top bar and the mobile sidebar.
+ * Wrapping collection chips shown under the workspace name in the focused sidebar.
  *
  * @param props Component props.
  * @returns the collection switcher.
@@ -62,30 +61,28 @@ function CollectionSwitcher({ showCreate = true }: Props) {
 
   return (
     <TooltipProvider>
-      <Row align="center" gap={4}>
-        <Tabs role="navigation" aria-label={t("Collections")}>
-          {items.map((collection) => {
-            const isActive = collection.id === focused?.id;
+      <Tabs role="navigation" aria-label={t("Collections")}>
+        {items.map((collection) => {
+          const isActive = collection.id === focused?.id;
 
-            return (
-              <Tab
-                key={collection.id}
-                ref={isActive ? activeTabRef : undefined}
-                to={collection.path}
-                $active={isActive}
-                aria-current={isActive ? "page" : undefined}
-                onClick={() => ui.setFocusedCollectionId(collection.id)}
-                onMouseEnter={() => {
-                  void Scenes.Collection.preload();
-                  void collection.fetchDocuments();
-                }}
-              >
-                <CollectionIcon collection={collection} size={20} expanded />
-                <Label>{collection.displayName}</Label>
-              </Tab>
-            );
-          })}
-        </Tabs>
+          return (
+            <Tab
+              key={collection.id}
+              ref={isActive ? activeTabRef : undefined}
+              to={collection.path}
+              $active={isActive}
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => ui.setFocusedCollectionId(collection.id)}
+              onMouseEnter={() => {
+                void Scenes.Collection.preload();
+                void collection.fetchDocuments();
+              }}
+            >
+              <CollectionIcon collection={collection} size={18} expanded />
+              <Label>{collection.displayName}</Label>
+            </Tab>
+          );
+        })}
         {showCreate && can.createCollection && (
           <Tooltip content={t("New collection")}>
             <CreateButton
@@ -96,23 +93,20 @@ function CollectionSwitcher({ showCreate = true }: Props) {
             </CreateButton>
           </Tooltip>
         )}
-      </Row>
+      </Tabs>
     </TooltipProvider>
   );
 }
 
-const Row = styled(Flex)`
-  min-width: 0;
-  width: 100%;
-`;
-
 const Tabs = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
   min-width: 0;
-  flex: 1;
-  overflow-x: auto;
+  width: 100%;
+  max-height: 112px;
+  overflow-y: auto;
   ${hideScrollbars()}
 `;
 
@@ -120,16 +114,16 @@ const Tab = styled(Link)<{ $active?: boolean }>`
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-shrink: 0;
-  max-width: 220px;
+  flex: 0 1 auto;
+  max-width: 100%;
   overflow: hidden;
-  height: 32px;
-  padding: 0 10px;
+  height: 28px;
+  padding: 0 8px;
   border-radius: 6px;
   color: ${s("sidebarText")};
   background: ${(props) =>
     props.$active ? props.theme.sidebarActiveBackground : "transparent"};
-  font-size: 14px;
+  font-size: 13px;
   font-weight: ${(props) => (props.$active ? 600 : 475)};
   text-decoration: none;
   ${undraggableOnDesktop()}
