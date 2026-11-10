@@ -96,7 +96,11 @@ function CollectionSwitcher({ showCreate = true, variant = "page" }: Props) {
                   void collection.fetchDocuments();
                 }}
               >
-                <CollectionIcon collection={collection} size={18} expanded />
+                <CollectionIcon
+                  collection={collection}
+                  size={variant === "page" ? 20 : 18}
+                  expanded
+                />
                 <Label>{collection.displayName}</Label>
               </Tab>
             );
@@ -143,8 +147,8 @@ const Tab = styled(Link)<{ $active?: boolean; $variant: Variant }>`
   flex: 0 0 auto;
   max-width: ${(props) => (props.$variant === "page" ? "220px" : "100%")};
   overflow: hidden;
-  height: 32px;
-  padding: 0 10px;
+  height: ${(props) => (props.$variant === "page" ? 36 : 32)}px;
+  padding: ${(props) => (props.$variant === "page" ? "0 12px" : "0 10px")};
   border-radius: 6px;
   color: ${(props) =>
     props.$variant === "page"
@@ -158,7 +162,7 @@ const Tab = styled(Link)<{ $active?: boolean; $variant: Variant }>`
         ? props.theme.backgroundSecondary
         : props.theme.sidebarActiveBackground
       : "transparent"};
-  font-size: 14px;
+  font-size: ${(props) => (props.$variant === "page" ? 16 : 14)}px;
   font-weight: ${(props) => (props.$active ? 600 : 475)};
   text-decoration: none;
   ${undraggableOnDesktop()}
