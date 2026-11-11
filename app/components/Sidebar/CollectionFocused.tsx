@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
-import { PlusIcon, SearchIcon, HomeIcon, SidebarIcon } from "outline-icons";
-import { useCallback, useEffect, useState, type MouseEvent } from "react";
+import { SearchIcon, HomeIcon, SidebarIcon } from "outline-icons";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import styled from "styled-components";
@@ -10,9 +10,6 @@ import { createCollection } from "~/actions/definitions/collections";
 import { navigateToImport } from "~/actions/definitions/navigation";
 import { inviteUser } from "~/actions/definitions/users";
 import CollectionSwitcher from "~/components/CollectionSwitcher";
-import Flex from "~/components/Flex";
-import CollectionIcon from "~/components/Icons/CollectionIcon";
-import NudeButton from "~/components/NudeButton";
 import Scrollable from "~/components/Scrollable";
 import Text from "~/components/Text";
 import Tooltip from "~/components/Tooltip";
@@ -22,12 +19,11 @@ import { useFocusedCollection } from "~/hooks/useCollectionFocusedNav";
 import useMobile from "~/hooks/useMobile";
 import usePolicy from "~/hooks/usePolicy";
 import useStores from "~/hooks/useStores";
-import CollectionMenu from "~/menus/CollectionMenu";
 import TeamMenu from "~/menus/TeamMenu";
 import type Collection from "~/models/Collection";
 import * as Scenes from "~/routes/scenes";
 import { FOCUSED_SIDEBAR_WIDTH } from "~/utils/collectionFocusedNav";
-import { homePath, newDocumentPath, searchPath } from "~/utils/routeHelpers";
+import { homePath, searchPath } from "~/utils/routeHelpers";
 import TeamLogo from "../TeamLogo";
 import {
   DragActiveProvider,
@@ -41,7 +37,6 @@ import DragPlaceholder from "./components/DragPlaceholder";
 import DropToImport from "./components/DropToImport";
 import HistoryNavigation from "./components/HistoryNavigation";
 import PlaceholderCollections from "./components/PlaceholderCollections";
-import Relative from "./components/Relative";
 import Section from "./components/Section";
 import SharedWithMe from "./components/SharedWithMe";
 import SidebarAction from "./components/SidebarAction";
@@ -211,63 +206,27 @@ const CollectionTree = observer(function CollectionTree({
 }: {
   collection: Collection;
 }) {
-  const { t } = useTranslation();
   const { documents } = useStores();
-  const history = useHistory();
   const can = usePolicy(collection);
-  const sidebarContext = collection.isPersonal ? "personal" : "collections";
 
-  const handlePrefetch = useCallback(() => {
+  useEffect(() => {
     void Scenes.Collection.preload();
     void collection.fetchDocuments();
   }, [collection]);
 
-  const handleNewDocument = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
-      history.push(newDocumentPath(collection.id));
-    },
-    [collection.id, history]
-  );
-
   return (
     <Section auto>
       <DropToImport collectionId={collection.id} disabled={!can.createDocument}>
-        <Relative>
-          <SidebarLink
-            to={{ pathname: collection.path, state: { sidebarContext } }}
-            icon={<CollectionIcon collection={collection} expanded />}
-            label={collection.displayName}
-            exact={false}
-            onClickIntent={handlePrefetch}
-            menu={
-              <HeaderActions>
-                {can.createDocument && (
-                  <Tooltip content={t("New doc")}>
-                    <NudeButton
-                      aria-label={t("New document")}
-                      onClick={handleNewDocument}
-                    >
-                      <PlusIcon />
-                    </NudeButton>
-                  </Tooltip>
-                )}
-                <CollectionMenu collection={collection} />
-              </HeaderActions>
-            }
+        <LargeDirectory aria-label={collection.displayName}>
+          <CollectionLinkChildren
+            collection={collection}
+            expanded
+            depth={0}
+            childDepth={0}
+            prefetchDocument={documents.prefetchDocument}
           />
-        </Relative>
+        </LargeDirectory>
       </DropToImport>
-      <LargeDirectory aria-label={collection.displayName}>
-        <CollectionLinkChildren
-          collection={collection}
-          expanded
-          depth={0}
-          childDepth={0}
-          prefetchDocument={documents.prefetchDocument}
-        />
-      </LargeDirectory>
     </Section>
   );
 });
@@ -280,10 +239,6 @@ const Overflow = styled.div`
 const MobileSwitcher = styled.div`
   flex-shrink: 0;
   padding: 0 12px 10px;
-`;
-
-const HeaderActions = styled(Flex)`
-  align-items: center;
 `;
 
 const LargeDirectory = styled.div`
